@@ -1,23 +1,43 @@
-const express = require("express");
-const cors = require("cors");
+const express = require('express');
+const mongoose = require('mongoose');
+const dotenv = require('dotenv');
+const cors = require('cors');
+const session = require('express-session');
+const passport = require('passport');
+require('./passport'); // passport strategy setup
+
+dotenv.config();
 
 const app = express();
-const PORT = process.env.PORT || 3000;
 
-app.use(cors());
+// ✅ Middleware
+app.use(cors({
+  origin: 'http://localhost:5173', // frontend origin (can update to Render frontend URL)
+  credentials: true,
+}));
 app.use(express.json());
+app.use(session({
+  secret: process.env.JWT_SECRET,
+  resave: false,
+  saveUninitialized: true,
+}));
+app.use(passport.initialize());
+app.use(passport.session());
 
-// ✅ Root route for health check
-app.get("/", (req, res) => {
+// ✅ Routes
+app.use('/api/auth', require('./routes/auth'));
+app.use('/api/notes', require('./routes/notes'));
+
+// ✅ Add this root route
+app.get('/', (req, res) => {
   res.send("✅ Backend is running successfully!");
 });
 
-// ✅ Example API route
-app.get("/api/notes", (req, res) => {
-  res.json([{ id: 1, title: "Test Note", content: "This is a test" }]);
-});
+// ✅ Connect to MongoDB
+mongoose.connect(process.env.MONGO_URI)
+  .then(() => console.log("✅ MongoDB connected"))
+  .catch((err) => console.error("❌ MongoDB connection error:", err));
 
-// Start the server
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
-});
+// ✅ Start server
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
