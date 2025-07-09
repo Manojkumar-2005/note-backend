@@ -12,7 +12,7 @@ const app = express();
 
 // ✅ Middleware
 app.use(cors({
-  origin: 'http://localhost:5173', // frontend origin (can update to Render frontend URL)
+  origin: 'https://note-7e2s.onrender.com', // frontend origin (can update to Render frontend URL)
   credentials: true,
 }));
 app.use(express.json());
